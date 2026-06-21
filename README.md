@@ -202,9 +202,9 @@ The database is structured as a **Star Schema** — a widely used data warehousi
 
 ### Entity-Relationship Diagram (ERD)
 
-![Database Entity-Relationship Diagram](erd_diagram.png)
+[![Database Entity-Relationship Diagram](https://drive.google.com/uc?export=view&id=11316UQHCZQ2KdGGQpVlvJk1FTeFgQH88)](https://drive.google.com/file/d/11316UQHCZQ2KdGGQpVlvJk1FTeFgQH88/view?usp=sharing)
 
-> *The ERD above shows the Star Schema with the central `trips` fact table linked to four dimension lookup tables via foreign keys.*
+> *The ERD above shows the Star Schema with the central `trips` fact table linked to four dimension lookup tables via foreign keys. Click the diagram to view the full resolution version.*
 
 ### Query Optimizations
 
