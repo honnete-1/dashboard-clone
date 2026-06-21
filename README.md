@@ -6,57 +6,54 @@
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](#)
 [![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](#)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](#)
+[![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)](#)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](#)
 
-NYC Urban Mobility is an enterprise-grade full-stack dashboard designed to process, analyze, and visualize over 7.4 million taxi rides from January 2019. The application cleans messy raw datasets, programmatically integrates spatial metadata from TLC shapefiles, stores them in an indexed SQLite database, and serves data insights via a Python Flask API to an interactive, beautifully-styled vanilla CSS dashboard.
+NYC Urban Mobility is an enterprise-grade full-stack analytics dashboard built to process, clean, and visualize over **7.4 million yellow taxi rides** from New York City in January 2019. The application runs a full ETL pipeline on raw datasets, integrates geospatial metadata from TLC shapefiles, stores clean records in a normalized SQLite database, and serves real-time insights through a Python Flask REST API to a beautifully styled, fully interactive vanilla JavaScript dashboard.
 
-Live Demo: [https://nyc-mobility-dashboard.vercel.app/](https://nyc-mobility-dashboard.vercel.app/) | Video Demo: [Watch on Loom (Replace with Link)](#)
+**Live Demo:** [https://nyc-mobility-dashboard.vercel.app/](https://nyc-mobility-dashboard.vercel.app/) &nbsp;|&nbsp; **Video Demo:** [▶ Watch on Loom — Coming Soon](#)
 
 ---
 
-## Table of Contents
+## 📋 Table of Contents
 
 - [Features](#-features)
-- [APIs & Data Sources](#-apis--data-sources)
 - [Tech Stack](#-tech-stack)
 - [Project Structure](#-project-structure)
 - [Local Setup & Installation](#-local-setup--installation)
-- [Running the Application](#-running-the-application)
-- [Database Design & Star Schema](#-database-design--star-schema)
+- [Environment Setup](#-environment-setup)
+- [Running the Backend](#-running-the-backend)
+- [Running the Frontend](#-running-the-frontend)
+- [Database Design & ERD](#-database-design--erd)
 - [Data Integrity & Cleaning Log](#-data-integrity--cleaning-log)
-- [Custom Algorithm (DSA) Implementation](#-custom-algorithm-dsa-implementation)
-- [Group Collaboration & Reflection](#-group-collaboration--reflection)
+- [Custom DSA Algorithm](#-custom-dsa-algorithm-min-heap)
+- [Group Participation & Reflection](#-group-participation--reflection)
 
 ---
 
-## 📋 Features
+## 🚀 Features
 
-* **Interactive Filters:** Dynamic query interface to filter rides by Borough, Hour of Day, and TLC Rate Code.
-* **Dual Visual Themes:** Smooth light/dark mode switcher with color-matched charts on-the-fly.
-* **KPI Metrics Panel:** Instant counters for total trips, average fares, tipping percentages, and average vehicle speeds.
-* **ApexCharts Visualizations:**
-  * *Hourly Congestion Line/Column Chart:* Highlights the inverse relationship between trip volume and average speed.
-  * *Busiest Pickups Horizontal Bar Chart:* Renders top neighborhoods sorted dynamically by volume.
-  * *Tipping Behavior Column Chart:* Compares tipping averages across credit card and cash payment methods.
-* **Spatial Metadata Integration:** Integrates taxi zone shapefile boundaries and calculates physical properties (`Shape_Area`, `Shape_Length`) inside the SQL database.
-
----
-
-## 📊 APIs & Data Sources
-
-* **Yellow Tripdata (Fact Table):** Raw trip-level records (pickup/dropoff times, distances, payment types, and fares).
-* **Taxi Zone Lookup (Dimension Table):** Categorical mapping for Zone IDs to Boroughs and Service Zones.
-* **Taxi Zones Shapefile (Spatial Dimension):** Raw shapefiles containing spatial coordinates of NYC zones, programmatically loaded and associated in the database.
+- **Interactive Filters:** Dynamically query rides by Borough, Hour of Day, and TLC Rate Code with no page reloads.
+- **Dual Visual Themes:** Fully reactive Light/Dark mode switcher. All ApexCharts update their color scheme on-the-fly without refreshing.
+- **KPI Metrics Panel:** Instant counters showing Total Trips, Average Fares, Tipping Percentage, and Average Speed.
+- **ApexCharts Visualizations:**
+  - *Hourly Congestion Chart:* Line/Column combo chart showing the inverse relationship between trip volume and vehicle speed throughout the day.
+  - *Top 10 Busiest Pickup Zones Chart:* Horizontal bar chart rendering the top neighborhoods, ranked using a custom Min-Heap algorithm (not a library sort).
+  - *Tipping Behavior Chart:* Column chart comparing average tip percentages across credit card and cash payment methods.
+- **Precomputed Cache:** The default dashboard view loads from a precomputed JSON file for instantaneous page load, bypassing live database queries on first render.
+- **Spatial Metadata:** The `zones` table holds geospatial properties (`Shape_Area`, `Shape_Length`) programmatically merged from official TLC shapefiles using GeoPandas.
 
 ---
 
 ## 💻 Tech Stack
 
-* **Frontend:** HTML5, Vanilla CSS3 (Custom Dark/Light Themes), JavaScript (ES6+), [ApexCharts.js](https://apexcharts.com/)
-* **Backend:** Python 3, [Flask](https://flask.palletsprojects.com/) (RESTful API), [Flask-CORS](https://flask-cors.corydolphin.com/)
-* **Data Engineering:** [Pandas](https://pandas.pydata.org/), [GeoPandas](https://geopandas.org/), [PyArrow](https://arrow.apache.org/docs/python/) (for Parquet chunk processing)
-* **Database:** [SQLite3](https://www.sqlite.org/) with multi-column index optimization
-* **Hosting/Deployment:** [Vercel](https://vercel.com/) (Serverless Python Functions & Edge CDN)
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | HTML5, Vanilla CSS3 (Custom Variables), JavaScript ES6+, ApexCharts.js |
+| **Backend** | Python 3, Flask (REST API), Flask-CORS |
+| **Database** | SQLite3 (Star Schema, B-Tree Indexes, WAL Mode) |
+| **Data Engineering** | Pandas (Chunked Processing), GeoPandas (Shapefile Merging), PyArrow (Parquet) |
+| **Deployment** | Vercel (Serverless Python Functions + Edge CDN for Static Assets) |
 
 ---
 
@@ -65,185 +62,218 @@ Live Demo: [https://nyc-mobility-dashboard.vercel.app/](https://nyc-mobility-das
 ```text
 NYC_Taxi_Project/
 │
-├── backend/                             # Python Backend and Data Processing
-│   ├── algorithms.py                    # Custom Min-Heap DSA implementation
-│   ├── app.py                           # Flask server and query API endpoints
-│   ├── db_schema.py                     # Relational schema & lookup definitions
-│   ├── db_loader.py                     # Chunked Parquet database loader pipeline
-│   ├── data_integrity.py                # Chunked CSV cleaning and anomaly parser
-│   └── normalization_feature_engineering.py # Data type normalizer & feature engineer
+├── backend/                                  # Python Backend & Data Pipeline
+│   ├── algorithms.py                         # Custom Min-Heap DSA (built from scratch)
+│   ├── app.py                                # Flask server, CORS, and API endpoints
+│   ├── db_schema.py                          # Database schema and lookup table definitions
+│   ├── db_loader.py                          # Chunked Parquet-to-SQLite loader
+│   ├── data_integrity.py                     # CSV cleaner: anomaly detection and removal
+│   ├── normalization_feature_engineering.py  # Feature calculator: speed, duration, tip %
+│   ├── query_database.py                     # SQL verification and testing scripts
+│   ├── verify_clean_data.py                  # Automated post-cleaning validation checklist
+│   └── generate_db_deploy.py                 # Generates the 50k-row deployment database
 │
-├── Frontend/                            # Vanilla Web Interface (Capitalized for GitHub)
-│   ├── index.html                       # Dashboard HTML structure
-│   ├── styles.css                       # Custom styling system and themes
-│   ├── app.js                           # Frontend API fetching and chart rendering
-│   └── nyc_taxi_trails.png              # Background asset
+├── Frontend/                                 # Vanilla Web Interface
+│   ├── index.html                            # Dashboard HTML structure (Semantic HTML5)
+│   ├── styles.css                            # Custom CSS system with light/dark variables
+│   ├── app.js                                # Fetch API calls and ApexCharts rendering
+│   └── nyc_taxi_trails.png                   # Background hero image
 │
-├── data/                                # Data Storage (Git Ignored for large files)
-│   ├── taxi_zones/                      # TLC Zone Shapefiles (.shp, .shx, etc.)
-│   ├── taxi_zone_lookup.csv             # Dimension mapping CSV
-│   ├── nyc_mobility_deploy.db           # 50k-row lightweight database (Committed to Git)
-│   ├── data_cleaning_log.json           # Log of dropped records & anomalies
-│   └── dashboard_cache.json             # Precomputed cache for instant home page load
+├── data/                                     # Data Storage (partially Git-Ignored)
+│   ├── taxi_zones/                           # TLC Shapefiles (Git-Ignored)
+│   ├── taxi_zone_lookup.csv                  # Zone-to-Borough dimension mapping
+│   ├── nyc_mobility_deploy.db               # ✅ 50k-row deployment database (committed)
+│   ├── dashboard_cache.json                  # ✅ Precomputed home view cache (committed)
+│   ├── data_cleaning_log.json                # ✅ Anomaly removal audit log (committed)
+│   ├── yellow_tripdata.csv                   # ❌ Raw data 680MB (Git-Ignored)
+│   └── nyc_mobility.db                       # ❌ Full database 1.4GB (Git-Ignored)
 │
 ├── api/
-│   └── index.py                         # Vercel serverless entry point
-├── vercel.json                          # Vercel routing and rewrite configuration
-├── requirements.txt                     # Backend deployment dependencies
-└── README.md                            # Project setup and instructions
+│   └── index.py                              # Vercel serverless Python entry point
+├── vercel.json                               # Vercel rewrite and routing configuration
+├── requirements.txt                          # Deployment dependencies for Vercel
+└── README.md                                 # Project documentation (this file)
 ```
 
 ---
 
 ## ⚙️ Local Setup & Installation
 
-This project is designed to be **fully runnable out of the box** without needing to download the massive 680MB raw dataset, as it includes a pre-seeded, lightweight deployment database (`nyc_mobility_deploy.db`) in the repository.
+> **Good news:** This project is fully runnable out-of-the-box using the pre-seeded **50k-row deployment database** (`nyc_mobility_deploy.db`) that is already committed in the `data/` folder. You do **not** need to download the 680MB raw dataset to run and test the full dashboard!
 
 ### 1. Prerequisites
-Ensure you have Python 3.8+ installed on your system.
+
+Ensure you have the following installed:
+- **Python 3.8+** — [Download Python](https://www.python.org/downloads/)
+- **Git** — [Download Git](https://git-scm.com/downloads)
+
+Check your Python version:
+```bash
+python --version
+```
+
+---
 
 ### 2. Clone the Repository
+
 ```bash
 git clone https://github.com/honnete-1/NYC-Mobility-Dashboard.git
 cd NYC-Mobility-Dashboard
 ```
 
-### 3. Install Dependencies
-Install all required packages using `pip`:
+---
+
+## 🌐 Environment Setup
+
+### 3. (Recommended) Create a Virtual Environment
+This keeps the project dependencies isolated from your system Python:
+
+**On Windows:**
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+**On macOS/Linux:**
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 4. Install All Dependencies
+
 ```bash
 pip install Flask flask-cors pandas geopandas pyarrow numpy fpdf2
 ```
 
----
-
-## 🏃 Running the Application
-
-### Method A: Run Frontend and Backend Unified (Recommended)
-You can launch the backend Flask server, which will automatically serve the frontend dashboard on port `5000`:
-
-1. Navigate to the `backend` folder:
-   ```bash
-   cd backend
-   ```
-2. Start the server:
-   ```bash
-   python app.py
-   ```
-3. Open your browser and go to:
-   👉 **[http://127.0.0.1:5000/](http://127.0.0.1:5000/)**
-
----
-
-## 🗄️ Database Design & Star Schema
-
-The database implements a **Star Schema** with one central Fact table and four Dimension lookup tables to minimize redundancy and optimize query speed:
-
-```mermaid
-erDiagram
-    trips {
-        INTEGER trip_id PK
-        INTEGER VendorID FK
-        TEXT tpep_pickup_datetime
-        TEXT tpep_dropoff_datetime
-        INTEGER passenger_count
-        REAL trip_distance
-        INTEGER RatecodeID FK
-        TEXT store_and_fwd_flag
-        INTEGER PULocationID FK
-        INTEGER DOLocationID FK
-        INTEGER payment_type FK
-        REAL fare_amount
-        REAL extra
-        REAL mta_tax
-        REAL tip_amount
-        REAL tolls_amount
-        REAL improvement_surcharge
-        REAL total_amount
-        REAL congestion_surcharge
-        REAL trip_duration_min
-        REAL average_speed_mph
-        REAL tip_percentage
-    }
-    vendors {
-        INTEGER vendor_id PK
-        TEXT vendor_name
-    }
-    rate_codes {
-        INTEGER ratecode_id PK
-        TEXT rate_code_name
-    }
-    payment_types {
-        INTEGER payment_type_id PK
-        TEXT payment_name
-    }
-    zones {
-        INTEGER zone_id PK
-        TEXT borough
-        TEXT zone_name
-        TEXT service_zone
-        REAL shape_area
-        REAL shape_length
-    }
-
-    trips ||--o{ vendors : "VendorID"
-    trips ||--o{ rate_codes : "RatecodeID"
-    trips ||--o{ payment_types : "payment_type"
-    trips ||--o{ zones : "PULocationID"
-    trips ||--o{ zones : "DOLocationID"
+Or install the core deployment dependencies only:
+```bash
+pip install -r requirements.txt
 ```
 
+---
+
+## 🖥️ Running the Backend
+
+The Flask backend serves both the API and the frontend static files. Running it is a single command:
+
+```bash
+cd backend
+python app.py
+```
+
+**What happens when you run this:**
+1. The server checks whether a database exists in `data/`.
+2. If it finds `nyc_mobility_deploy.db` (the pre-seeded deployment database), it boots immediately.
+3. If **neither** database is found, it automatically runs the full ETL pipeline to build the database from the raw CSV file (requires the 680MB raw dataset to be in `data/`).
+4. Flask starts serving on port `5000`.
+
+Expected output:
+```
+Starting flask server on port 5000...
+ * Running on http://0.0.0.0:5000
+```
+
+---
+
+## 🌍 Running the Frontend
+
+Because the Flask backend is configured to serve the frontend static files directly, there is **no separate frontend server** needed.
+
+Once the backend is running, open your browser and go to:
+
+```
+http://127.0.0.1:5000/
+```
+
+The full dashboard will load automatically. The frontend JavaScript (`app.js`) connects to the Flask API at the same origin, so no environment variable configuration is needed.
+
+> **Deployed version:** The live production site is available at:
+> [https://nyc-mobility-dashboard.vercel.app/](https://nyc-mobility-dashboard.vercel.app/)
+
+---
+
+## 🗄️ Database Design & ERD
+
+The database is structured as a **Star Schema** — a widely used data warehousing design that minimizes data redundancy and maximizes query efficiency.
+
+- **Central Fact Table (`trips`):** Contains all 22 transactional and computed columns per ride.
+- **Dimension Tables (`vendors`, `rate_codes`, `payment_types`, `zones`):** Contain descriptive lookup data. The `zones` table also holds spatial attributes (`shape_area`, `shape_length`) merged from TLC shapefiles using GeoPandas.
+
+### Entity-Relationship Diagram (ERD)
+
+![Database Entity-Relationship Diagram](erd_diagram.png)
+
+> *The ERD above shows the Star Schema with the central `trips` fact table linked to four dimension lookup tables via foreign keys.*
+
 ### Query Optimizations
-To ensure sub-second response times on a dataset of 7.4M rows:
-1. **Indexes:** Added B-Tree indexes on `tpep_pickup_datetime`, `PULocationID`, and `DOLocationID`.
-2. **SQLite Configuration:**
-   - `PRAGMA temp_store = MEMORY;`
-   - `PRAGMA journal_mode = WAL;`
+
+| Optimization | Detail |
+| :--- | :--- |
+| **B-Tree Index on `tpep_pickup_datetime`** | Enables fast hour-of-day filtering |
+| **B-Tree Index on `PULocationID`** | Enables fast borough and pickup zone filtering |
+| **B-Tree Index on `DOLocationID`** | Enables fast dropoff zone filtering |
+| **`PRAGMA journal_mode = WAL`** | Write-Ahead Logging for faster concurrent reads |
+| **`PRAGMA temp_store = MEMORY`** | Stores temporary results in RAM instead of disk |
 
 ---
 
 ## 🧹 Data Integrity & Cleaning Log
 
-We removed **198,392 rows** (2.59% of the dataset) due to anomalies. Below is a breakdown of the dropped records:
+We removed **198,392 rows** (2.59% of the dataset) due to data quality issues. The full cleaning log is stored in `data/data_cleaning_log.json`.
 
-| Anomaly Class | Rows Removed | Description / Bounds |
+| Anomaly Class | Rows Removed | Validation Rule |
 | :--- | :--- | :--- |
-| **Wrong Year/Month** | 537 | Pickup datetime was outside January 2019 |
-| **Pickup After Dropoff** | 4 | Dropoff time occurred before pickup time |
-| **Negative Duration** | 6,294 | Trip duration calculated was $\le 0$ minutes |
-| **Extreme Duration** | 20,913 | Trip duration exceeded 3 hours (180 mins) |
-| **Invalid Distance** | 54,802 | Distance was $\le 0$ or $> 100$ miles |
-| **Invalid Fare** | 9,591 | Fare amount was $\le 0$ or $> \$500.00$ |
-| **Invalid Total** | 8,568 | Total charge was $\le 0$ or $> \$1,000.00$ |
-| **Invalid Passengers** | 117,438 | Passenger count was $0$ or $> 6$ riders |
-| **Duplicate Rows** | 34 | Identical rows on primary keys |
+| **Wrong Year/Month** | 537 | Pickup datetime must be within January 2019 |
+| **Pickup After Dropoff** | 4 | Dropoff time must be after pickup time |
+| **Negative Duration** | 6,294 | Trip duration must be > 0 minutes |
+| **Extreme Duration** | 20,913 | Trip duration must be ≤ 180 minutes (3 hours) |
+| **Invalid Distance** | 54,802 | Trip distance must be > 0 and ≤ 100 miles |
+| **Invalid Fare** | 9,591 | Fare amount must be > $0 and ≤ $500 |
+| **Invalid Total** | 8,568 | Total charge must be > $0 and ≤ $1,000 |
+| **Invalid Passengers** | 117,438 | Passenger count must be between 1 and 6 |
+| **Duplicate Rows** | 34 | Exact duplicates on key columns removed |
 
 ---
 
-## 🧮 Custom Algorithm (DSA) Implementation
+## 🧮 Custom DSA Algorithm: Min-Heap
 
-To rank the **Top 10 Busiest Pickup Neighborhoods**, the Flask API bypasses standard sorting libraries and uses a custom **Min-Heap (Priority Queue)** data structure built entirely from scratch:
+To rank the **Top 10 Busiest Pickup Neighborhoods**, the backend uses a fully custom **Min-Heap (Priority Queue)** implemented from scratch in `backend/algorithms.py`. This was a core project requirement — no standard sorting library functions were used.
 
-### Algorithmic Approach
-1. We stream through all 263 zone counts calculated from our database query.
-2. We maintain a Min-Heap of size $K$ ($K=10$).
-3. For each zone:
-   - If the heap has fewer than $K$ elements, we push the zone count onto the heap in $O(\log K)$ time.
-   - If the heap has $K$ elements and the new zone count is larger than the root element (the minimum count in the top 10), we replace the root with the new zone and sift-down in $O(\log K)$ time.
-4. After reading all $N$ zones, the heap contains the Top 10 busiest zones. We retrieve them sorted in descending order.
+### How It Works
 
-### Complexity
-- **Time Complexity:** $O(N \log K)$ where $N$ is the number of zones (263) and $K$ is 10. This is faster than a full sort which takes $O(N \log N)$.
-- **Space Complexity:** $O(K)$ auxiliary space, representing $O(1)$ space since $K$ is a fixed constant.
+```
+Stream all 263 NYC zone trip counts
+         ↓
+For each zone count:
+   ├── If heap size < K (10)   → Push onto heap
+   └── If zone count > heap root → Replace root, sift down
+         ↓
+Extract the top 10 elements sorted in descending order
+```
+
+### Complexity Analysis
+
+| Metric | This Algorithm | Standard `sort()` |
+| :--- | :--- | :--- |
+| **Time** | $O(N \log K)$ | $O(N \log N)$ |
+| **Space** | $O(K)$ — constant | $O(N)$ |
+| **Where** | N = 263 zones, K = 10 | N = 263 zones |
 
 ---
 
-## 👥 Group Collaboration & Reflection
+## 👥 Group Participation & Reflection
 
-### Team Roles
-* **Teammate A (Student A):** Developed backend routes, database schema, ETL cleaning pipelines, and the custom Min-Heap data structure.
-* **Teammate B (Student B):** Designed the frontend interface, integrated ApexCharts, created custom CSS variables for light/dark modes, and set up local serving.
+### Team Members & Roles
 
-### Key Reflection & Takeaways
-* **Data Scale Management:** Working with 7.4M rows taught us the importance of chunked data reading and relational schemas.
-* **Pathing & Serverless Deployment:** Deploying on Vercel highlighted case-sensitivity challenges (Windows local serving vs Linux cloud serving) and the requirement for absolute path resolution inside serverless function environments.
-* **Performance Optimization:** Indexing and precomputed JSON caching proved that large datasets can still load instantly on client devices with proper performance considerations.
+| Team Member | Role & Responsibilities |
+| :--- | :--- |
+| **Student A (Honnete)** | Backend development (`app.py`), database schema design (`db_schema.py`), ETL data pipeline, custom Min-Heap algorithm (`algorithms.py`), Vercel deployment |
+| **Student B (Emmanuella)** | Frontend interface (`index.html`, `styles.css`), ApexCharts integration, API integration (`app.js`), Light/Dark theme system |
+
+### What We Learned
+
+- **Data Scale Challenges:** Processing 7.4M rows on a laptop required chunk-based reading. We learned how to use `chunksize` in Pandas to keep memory stable.
+- **Relational Design Pays Off:** Designing the Star Schema upfront made query writing straightforward. Without it, our SQL would have been slow and messy.
+- **Cloud vs. Local Differences:** Deploying on Vercel taught us that Linux servers are case-sensitive (unlike Windows). A folder named `Frontend` vs `frontend` caused 404 errors in production.
+- **Caching is Powerful:** Pre-computing the default dashboard view into a JSON file made page loads feel instant—a small engineering decision with a huge user experience payoff.
