@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Small global resets that aren't worth turning into Tailwind utility soup */
+body {
+  @apply bg-page text-gray-800 font-sans antialiased;
+}
+
+/* Hide the ugly default scrollbar on the "Recently Viewed" horizontal
+   scroller but keep it scrollable - purely cosmetic, matches the reference */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
